@@ -1,0 +1,17 @@
+{
+  "name": "leanix-reports",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Batería de reportes personalizados para LeanIX",
+  "workspaces": [
+    "packages/shared",
+    "packages/*"
+  ],
+  "scripts": {
+    "start": "npm run start --workspace",
+    "build": "npm run build --workspace",
+    "upload": "npm run upload --workspace"
+  },
+  "author": "Marc Vilchez",
+  "license": "UNLICENSED"
+}
