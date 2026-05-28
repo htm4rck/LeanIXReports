@@ -13,5 +13,9 @@
     "upload": "npm run upload --workspace"
   },
   "author": "Marc Vilchez",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "jspdf": "^2.5.2",
+    "pptxgenjs": "^3.12.0"
+  }
 }

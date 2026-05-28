@@ -36,8 +36,6 @@ export class CapabilityPosterReport extends BaseReport {
       this.allNodes = result.allFactSheets.edges.map(e => e.node);
       this.allNodes.forEach(n => { this.dataMap[n.id] = n; });
       this.buildTrees();
-
-      this.buildTrees();
       this.render();
       this.bindEvents();
     } catch (error) {
