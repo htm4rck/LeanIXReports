@@ -1,12 +1,11 @@
 {
-  "name": "@leanix-reports/strategic-map",
+  "name": "@leanix-reports/technical-fit",
   "version": "1.0.0",
-  "description": "Mapa Estratégico Relacional - Vista multi-capa",
-  "author": "Marc Vilchez",
+  "description": "Technical Fit — Evaluación automática del portafolio",
   "private": true,
   "leanixReport": {
-    "id": "pe.com.alicorp.strategicmap",
-    "title": "Mapa Estratégico Relacional",
+    "id": "pe.com.alicorp.technicalfit",
+    "title": "Technical Fit — Evaluación automática del portafolio",
     "defaultConfig": {}
   },
   "leanixReportingCli": {
@@ -33,9 +32,7 @@
     "webpack-dev-server": "^5.2.1"
   },
   "dependencies": {
-    "@leanix-reports/shared": "*",
     "@leanix/reporting": "^0.4.148",
-    "html2canvas": "^1.4.1",
-    "lodash": "^4.17.21"
+    "@leanix-reports/shared": "*"
   }
 }

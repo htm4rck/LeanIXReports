@@ -1,0 +1,111 @@
+.tfit { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 12px 16px; color: #1e293b; height: 100vh; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+.tfit h1 { font-size: 18px; font-weight: 600; margin: 0; }
+.tfit h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; }
+.tfit-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-shrink: 0; }
+.tfit-badge { background: #dbeafe; color: #1d4ed8; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+
+/* Two-column layout */
+.tfit-layout { display: flex; gap: 16px; flex: 1; min-height: 0; overflow: hidden; }
+.tfit-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow: hidden; }
+.tfit-sidebar { width: 600px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+/* Top KPI row */
+.tfit-top { display: flex; gap: 10px; flex-shrink: 0; }
+.tfit-kpi-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex: 1; }
+.tfit-kpi-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.tfit-kpi-icon--apps { background: #dbeafe; color: #2563eb; }
+.tfit-kpi-icon--cov { background: #d1fae5; color: #059669; }
+.tfit-kpi-value { font-size: 22px; font-weight: 700; color: #0ea5e9; line-height: 1; }
+.tfit-kpi-pct { font-size: 14px; }
+.tfit-kpi-label { font-size: 10px; font-weight: 500; color: #475569; }
+.tfit-kpi-sub { font-size: 9px; color: #94a3b8; }
+.tfit-kpi-card--donut { flex: 2; flex-direction: column; align-items: flex-start; gap: 4px; }
+.tfit-donut-title { font-size: 11px; font-weight: 600; }
+.tfit-donut-row { display: flex; align-items: center; gap: 10px; }
+.tfit-donut-legend { display: flex; flex-direction: column; gap: 2px; }
+.tfit-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; }
+.tfit-legend-num { margin-left: auto; font-weight: 600; min-width: 20px; text-align: right; }
+.tfit-legend-pct { color: #94a3b8; min-width: 28px; text-align: right; }
+.tfit-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Detail panel (sidebar) */
+.tfit-detail-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; flex-shrink: 0; }
+.tfit-detail-empty { color: #94a3b8; font-size: 12px; text-align: center; padding: 20px 0; }
+.tfit-detail-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.tfit-detail-score { display: inline-block; color: #fff; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 5px; margin-bottom: 8px; }
+.tfit-detail-title { font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+.tfit-criteria-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.tfit-criteria-label { font-size: 10px; color: #475569; min-width: 110px; }
+.tfit-criteria-bar { flex: 1; height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.tfit-criteria-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+.tfit-criteria-val { font-size: 11px; font-weight: 600; min-width: 24px; text-align: right; }
+.tfit-detail-note { font-size: 9px; color: #94a3b8; margin-top: 6px; }
+
+/* App list (sidebar) */
+.tfit-app-list { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.tfit-search { width: 100%; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 5px; font-size: 11px; margin-bottom: 8px; outline: none; box-sizing: border-box; }
+.tfit-search:focus { border-color: #2563eb; }
+.tfit-app-table { flex: 1; overflow-y: auto; }
+.tfit-app-table table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.tfit-app-table th { text-align: left; padding: 5px 4px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #64748b; position: sticky; top: 0; background: #fff; }
+.tfit-app-table td { padding: 5px 4px; border-bottom: 1px solid #f1f5f9; }
+.tfit-app-row { cursor: pointer; }
+.tfit-app-row:hover { background: #f0f9ff; }
+.tfit-rating-chip { display: inline-block; color: #fff; font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 8px; white-space: nowrap; }
+
+/* Domain bars */
+.tfit-domains { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; flex-shrink: 0; }
+.tfit-domains-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.tfit-domains-legend { display: flex; gap: 10px; font-size: 9px; color: #64748b; }
+.tfit-domains-legend span { display: flex; align-items: center; gap: 3px; }
+.tfit-domain-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; cursor: pointer; padding: 2px 0; border-radius: 3px; }
+.tfit-domain-row:hover { background: #f8fafc; }
+.tfit-domain-name { min-width: 80px; font-size: 10px; font-weight: 500; }
+.tfit-domain-bar { flex: 1; display: flex; height: 18px; border-radius: 3px; overflow: hidden; }
+.tfit-bar-seg { display: flex; align-items: center; justify-content: center; min-width: 0; }
+.tfit-bar-seg span { font-size: 8px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; }
+.tfit-domain-total { font-size: 10px; font-weight: 600; min-width: 28px; text-align: right; }
+
+/* Bottom row */
+.tfit-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0; }
+.tfit-findings, .tfit-steps { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+.tfit-findings-grid { display: flex; gap: 12px; }
+.tfit-finding { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.tfit-finding-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 2px; }
+.tfit-finding-icon--eol { background: #fee2e2; }
+.tfit-finding-icon--auth { background: #d1fae5; }
+.tfit-finding-icon--comp { background: #fef3c7; }
+.tfit-finding-icon--rto { background: #dbeafe; }
+.tfit-finding-value { font-size: 18px; font-weight: 700; color: #1e293b; }
+.tfit-finding-label { font-size: 9px; color: #64748b; line-height: 1.2; }
+.tfit-steps-grid { display: flex; gap: 10px; }
+.tfit-step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; flex: 1; }
+.tfit-step-num { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #2563eb; color: #2563eb; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.tfit-step-text { font-size: 9px; color: #475569; line-height: 1.2; }
+
+/* Footer */
+.tfit-footer { font-size: 9px; color: #94a3b8; text-align: center; flex-shrink: 0; padding-top: 4px; }
+
+/* Info button */
+.tfit-info-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #2563eb; background: #fff; color: #2563eb; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: auto; }
+.tfit-info-btn:hover { background: #2563eb; color: #fff; }
+
+/* Modal */
+.tfit-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
+.tfit-modal-overlay.tfit-modal--open { display: flex; }
+.tfit-modal { background: #fff; border-radius: 12px; max-width: 720px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.tfit-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; }
+.tfit-modal-header h2 { font-size: 16px; margin: 0; }
+.tfit-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; padding: 4px 8px; }
+.tfit-modal-close:hover { color: #1e293b; }
+.tfit-modal-body { padding: 20px 24px; font-size: 13px; line-height: 1.6; color: #334155; }
+.tfit-modal-body p { margin: 0 0 14px; }
+.tfit-modal-body h3 { font-size: 13px; font-weight: 600; margin: 16px 0 8px; color: #1e293b; }
+.tfit-modal-body ul { margin: 0 0 12px; padding-left: 20px; }
+.tfit-modal-body li { margin-bottom: 4px; }
+.tfit-modal-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px; }
+.tfit-modal-table th { background: #f8fafc; padding: 8px 6px; text-align: left; border-bottom: 2px solid #e2e8f0; font-weight: 600; color: #475569; }
+.tfit-modal-table td { padding: 6px; border-bottom: 1px solid #f1f5f9; }
+.tfit-modal-formula { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 16px; font-family: monospace; font-size: 13px; text-align: center; margin-bottom: 12px; }
+.tfit-modal-ratings { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tfit-modal-chip { color: #fff; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px; }

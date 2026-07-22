@@ -1,7 +1,7 @@
 # LeanIX Reports - Makefile
 # Usage: make <target> [REPORT=<report-name>]
 
-REPORTS = capability-tags capability-poster strategic-map
+REPORTS = capability-tags capability-poster strategic-map technical-fit
 REPORT ?=
 ENV_FILE = c:\enviroment\leanix.json
 
@@ -43,6 +43,12 @@ dev-strategic: ## Start dev server for strategic-map
 	@if not exist packages\strategic-map\node_modules mklink /J packages\strategic-map\node_modules node_modules
 	cd packages\strategic-map && npm start
 
+.PHONY: dev-tfit
+dev-tfit: ## Start dev server for technical-fit
+	copy /Y "$(ENV_FILE)" packages\technical-fit\lxr.json
+	@if not exist packages\technical-fit\node_modules mklink /J packages\technical-fit\node_modules node_modules
+	cd packages\technical-fit && npm start
+
 # ─── Build ─────────────────────────────────────────────────────────────────────
 
 .PHONY: build
@@ -81,6 +87,11 @@ upload-strategic: ## Upload strategic-map report
 	copy /Y "$(ENV_FILE)" packages\strategic-map\lxr.json
 	cd packages\strategic-map && npm run upload
 
+.PHONY: upload-tfit
+upload-tfit: ## Upload technical-fit report
+	copy /Y "$(ENV_FILE)" packages\technical-fit\lxr.json
+	cd packages\technical-fit && npm run upload
+
 # ─── Utilities ─────────────────────────────────────────────────────────────────
 
 .PHONY: new
@@ -114,6 +125,7 @@ help: ## Show this help
 	@echo   make dev-tags             Start dev for capability-tags
 	@echo   make dev-poster           Start dev for capability-poster
 	@echo   make dev-strategic        Start dev for strategic-map
+	@echo   make dev-tfit             Start dev for technical-fit
 	@echo.
 	@echo   make build REPORT=name    Build a specific report
 	@echo   make build-all            Build all reports
@@ -123,6 +135,7 @@ help: ## Show this help
 	@echo   make upload-tags          Upload capability-tags
 	@echo   make upload-poster        Upload capability-poster
 	@echo   make upload-strategic     Upload strategic-map
+	@echo   make upload-tfit          Upload technical-fit
 	@echo.
 	@echo   make new REPORT=name      Scaffold a new report
 	@echo   make bump REPORT=name     Bump patch version
