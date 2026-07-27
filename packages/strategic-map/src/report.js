@@ -2,15 +2,15 @@ import { BaseReport, escapeHtml, getShortName, graphQL } from '@shared/index.js'
 import { exportGapsExcel, exportPDF } from './export.js';
 
 const LAYERS = [
-  { key: 'estrategicos', label: 'Objetivos EstratÃ©gicos', shortLabel: 'Objetivo estratÃ©gico', color: '#8a38d1', bg: '#faf5ff', icon: 'â—Ž', relation: 'Realiza / Contribuye' },
-  { key: 'tacticos', label: 'Objetivos TÃ¡cticos', shortLabel: 'Objetivos tÃ¡cticos', color: '#f97316', bg: '#fff7ed', icon: 'â—‡', relation: 'Relaciona / InteractÃºa' },
-  { key: 'iniciativas', label: 'Iniciativas', shortLabel: 'Iniciativa', color: '#0f9aaa', bg: '#ecfeff', icon: 'â–·', relation: 'Soporta / Habilita' },
-  { key: 'capability', label: 'Capacidades', shortLabel: 'Capacidades', color: '#3b82f6', bg: '#eff6ff', icon: 'âŠž', relation: 'Realiza / Contribuye' },
-  { key: 'process', label: 'Procesos', shortLabel: 'Procesos', color: '#b45309', bg: '#fffbeb', icon: 'â—‰', relation: 'Relaciona / InteractÃºa' },
-  { key: 'application', label: 'Aplicaciones', shortLabel: 'Aplicaciones', color: '#2563eb', bg: '#eff6ff', icon: 'â–£', relation: 'Soporta / Habilita' },
-  { key: 'interface', label: 'Interfaces', shortLabel: 'Interfaces', color: '#8b5cf6', bg: '#f5f3ff', icon: 'â‡„', relation: 'Depende de / Usa' },
-  { key: 'itcomponent', label: 'Componentes TI', shortLabel: 'Componentes TI', color: '#16a34a', bg: '#f0fdf4', icon: 'â–¤', relation: 'Alojado en / Implementado en' },
-  { key: 'dataobject', label: 'Objetos de Datos', shortLabel: 'Objetos de Datos', color: '#64748b', bg: '#f8fafc', icon: 'â—Œ', relation: 'Suministra / Provee' },
+  { key: 'estrategicos', label: 'Objetivos Estratégicos', shortLabel: 'Objetivo estratégico', color: '#8a38d1', bg: '#faf5ff', icon: '◎', relation: 'Realiza / Contribuye' },
+  { key: 'tacticos', label: 'Objetivos Tácticos', shortLabel: 'Objetivos tácticos', color: '#f97316', bg: '#fff7ed', icon: '◇', relation: 'Relaciona / Interactúa' },
+  { key: 'iniciativas', label: 'Iniciativas', shortLabel: 'Iniciativa', color: '#0f9aaa', bg: '#ecfeff', icon: '▷', relation: 'Soporta / Habilita' },
+  { key: 'capability', label: 'Capacidades', shortLabel: 'Capacidades', color: '#3b82f6', bg: '#eff6ff', icon: '⊞', relation: 'Realiza / Contribuye' },
+  { key: 'process', label: 'Procesos', shortLabel: 'Procesos', color: '#b45309', bg: '#fffbeb', icon: '◉', relation: 'Relaciona / Interactúa' },
+  { key: 'application', label: 'Aplicaciones', shortLabel: 'Aplicaciones', color: '#2563eb', bg: '#eff6ff', icon: '▣', relation: 'Soporta / Habilita' },
+  { key: 'interface', label: 'Interfaces', shortLabel: 'Interfaces', color: '#8b5cf6', bg: '#f5f3ff', icon: '⇄', relation: 'Depende de / Usa' },
+  { key: 'itcomponent', label: 'Componentes TI', shortLabel: 'Componentes TI', color: '#16a34a', bg: '#f0fdf4', icon: '▤', relation: 'Alojado en / Implementado en' },
+  { key: 'dataobject', label: 'Objetos de Datos', shortLabel: 'Objetos de Datos', color: '#64748b', bg: '#f8fafc', icon: '◌', relation: 'Suministra / Provee' },
 ];
 
 const EMPTY_DATA = { estrategicos: [], tacticos: [], iniciativas: [], capability: [], process: [], application: [], interface: [], dataobject: [], itcomponent: [] };
@@ -35,7 +35,7 @@ export class StrategicMapReport extends BaseReport {
   }
 
   async loadData() {
-    this.showLoading('Cargando Mapa EstratÃ©gico...');
+    this.showLoading('Cargando Mapa Estratégico...');
 
     try {
       const objQ = `{ allFactSheets(factSheetType: Objective) { edges { node { id displayName description type tags { name } completion { completion }
@@ -525,11 +525,7 @@ export class StrategicMapReport extends BaseReport {
       const evaluation = { layerKey, itemId: item.id, score, status, missing, criticalCount, mediumCount };
       evaluations.set(`${layerKey}:${item.id}`, evaluation);
 
-      if (missing.length === 0) {
-        rows.push(this.makeGapRow(layerKey, item, evaluation, { field: 'Completo', message: 'Sin gaps minimosdetectados', action: 'Mantener actualizado', severity: 'complete' }));
-      } else {
-        for (const gap of missing) rows.push(this.makeGapRow(layerKey, item, evaluation, gap));
-      }
+      rows.push(this.makeGapRow(layerKey, item, evaluation));
     };
 
     const appById = new Map((data.application || []).map(item => [item.id, item]));
@@ -651,24 +647,35 @@ export class StrategicMapReport extends BaseReport {
 
   }
 
-  makeGapRow(layerKey, item, evaluation, gap) {
+  makeGapRow(layerKey, item, evaluation) {
     const layer = LAYERS.find(l => l.key === layerKey);
-    const severityLabel = gap.severity === 'critical' ? 'Critica' : gap.severity === 'complete' ? 'Completa' : 'Media';
+    const missing = evaluation.missing || [];
+    const severity = evaluation.status === 'complete' ? 'complete' : missing.some(gap => gap.severity === 'critical') ? 'critical' : 'medium';
+    const severityLabel = severity === 'critical' ? 'Critica' : severity === 'complete' ? 'Completa' : 'Media';
     const statusLabel = evaluation.status === 'critical' ? 'Critico' : evaluation.status === 'warning' ? 'Con gaps' : 'Completo';
+    const missingFields = missing.map(gap => gap.field);
+    const missingDetails = missing.map(gap => `${gap.field}: ${gap.message}`);
+    const recommendedActions = missing.map(gap => `${gap.field}: ${gap.action}`);
     return {
       layerKey,
       layerLabel: layer?.label || layerKey,
       id: item.id,
+      leanixId: item.id,
       name: item.name || item.fullName || '',
       code: item.code || '',
       score: evaluation.score,
       status: evaluation.status,
       statusLabel,
-      severity: gap.severity,
+      severity,
       severityLabel,
-      field: gap.field,
-      message: gap.message,
-      action: gap.action,
+      gapCount: missing.length,
+      criticalGapCount: evaluation.criticalCount || 0,
+      mediumGapCount: evaluation.mediumCount || 0,
+      field: missingFields.join(' | ') || 'Completo',
+      missingFields,
+      missingFieldsText: missingFields.join(' | ') || 'Sin gaps minimos detectados',
+      message: missingDetails.join(' | ') || 'Sin gaps minimos detectados',
+      action: recommendedActions.join(' | ') || 'Mantener actualizado',
     };
   }
 
@@ -709,19 +716,19 @@ export class StrategicMapReport extends BaseReport {
     this.container.innerHTML = `
       <div class="smap">
         <header class="smap-topbar">
-          <span class="smap-entity-count">VisiÃ³n completa de las ${total} entidades de LeanIX</span>
+          <span class="smap-entity-count">Visión completa de las ${total} entidades de LeanIX</span>
           <div class="smap-actions">
             <button class="smap-action" id="smapExportGaps" title="Exportar gaps a Excel">Gaps Excel</button>
             <button class="smap-action" id="smapExportPDF" title="Exportar PDF">PDF</button>
-            <button class="smap-icon-action" title="MÃ¡s opciones">â‹¯</button>
+            <button class="smap-icon-action" title="Más opciones">...</button>
           </div>
         </header>
 
         <section class="smap-toolbar" aria-label="Controles del mapa">
           <div class="smap-chip-row">
-            <button class="smap-filter-pill">â–½ Filtros activos</button>
-            ${this.selectedTag ? `<button class="smap-tag-pill">Tag: ${escapeHtml(this.selectedTag)} <span>Ã—</span></button>` : ''}
-            <button class="smap-reset" id="smapResetFilters">Ã— Resetear</button>
+            <button class="smap-filter-pill">▽ Filtros activos</button>
+            ${this.selectedTag ? `<button class="smap-tag-pill">Tag: ${escapeHtml(this.selectedTag)} <span>×</span></button>` : ''}
+            <button class="smap-reset" id="smapResetFilters">× Resetear</button>
           </div>
           <div class="smap-view-controls">
             <label>Vista:
@@ -731,7 +738,7 @@ export class StrategicMapReport extends BaseReport {
               <select class="smap-mini-select" disabled><option>Todo</option></select>
             </label>
             <div class="smap-zoom">
-              <button class="smap-icon-action" id="smapZoomOut">âˆ’</button>
+              <button class="smap-icon-action" id="smapZoomOut">-</button>
               <span>${this.zoom}%</span>
               <button class="smap-icon-action" id="smapZoomIn">+</button>
             </div>
@@ -763,7 +770,7 @@ export class StrategicMapReport extends BaseReport {
         ${this.data.estrategicos?.length === 0 && this.data.tacticos?.length === 0 ? `
         <div class="smap-empty">
           <p>No hay datos vinculados a esta VP.</p>
-          <p>Vincula objetivos estratÃ©gicos y tÃ¡cticos con Business Capabilities en LeanIX para ver el mapa.</p>
+          <p>Vincula objetivos estratégicos y tácticos con Business Capabilities en LeanIX para ver el mapa.</p>
         </div>` : ''}
       </div>`;
 
@@ -786,7 +793,7 @@ export class StrategicMapReport extends BaseReport {
     return `<div class="smap-root-row">
       <div class="smap-row-label smap-row-label--root" style="--layer-color:${layer.color}">
         <span class="smap-row-icon">${layer.icon}</span>
-        <span>1 Objetivo EstratÃ©gico</span>
+        <span>1 Objetivo Estratégico</span>
       </div>
       <div class="smap-root-card smap-card" data-id="${emp.id}" data-layer="estrategicos" style="--card-color:${layer.color};--card-bg:${layer.bg}">
         <div class="smap-card-icon">${layer.icon}</div>
@@ -898,17 +905,17 @@ export class StrategicMapReport extends BaseReport {
     const code = item.code || '';
     const tag = (item.tags || []).find(t => TAG_FILTERS.includes(t)) || '';
     const orgLabel = layer.key === 'application'
-      ? `Org: ${item.orgNames?.length ? item.orgNames[0] : 'Sin organizaciÃ³n'}`
+      ? `Org: ${item.orgNames?.length ? item.orgNames[0] : 'Sin organización'}`
       : '';
     const gap = this.gapReport?.evaluations?.get(`${layer.key}:${item.id}`);
     return `<div class="smap-card" data-id="${item.id}" data-layer="${layer.key}" style="--card-color:${layer.color};--card-bg:${layer.bg}">
       <div class="smap-card-icon">${layer.icon}</div>
       <div class="smap-card-body">
         <div class="smap-card-name">${escapeHtml(name)}</div>
-        ${gap ? `<div class="smap-gap-badge smap-gap-badge--${gap.status}">${gap.score}% Â· ${gap.status === 'complete' ? 'Completo' : `${gap.missing.length} gaps`}</div>` : ''}
-        ${orgLabel ? `<div class="smap-org-badge" title="OrganizaciÃ³n">${escapeHtml(orgLabel)}</div>` : ''}
+        ${gap ? `<div class="smap-gap-badge smap-gap-badge--${gap.status}">${gap.score}% · ${gap.status === 'complete' ? 'Completo' : `${gap.missing.length} gaps`}</div>` : ''}
+        ${orgLabel ? `<div class="smap-org-badge" title="Organización">${escapeHtml(orgLabel)}</div>` : ''}
         <div class="smap-card-meta">
-          ${code ? `<span>${escapeHtml(code)}</span>` : '<span>Sin cÃ³digo</span>'}
+          ${code ? `<span>${escapeHtml(code)}</span>` : '<span>Sin código</span>'}
           ${tag ? `<b>${escapeHtml(tag)}</b>` : ''}
         </div>
       </div>
@@ -919,7 +926,7 @@ export class StrategicMapReport extends BaseReport {
     const emp = this.selectedEmpresa;
     const vp = this.selectedVP;
     return `<section class="smap-side-card">
-      <div class="smap-side-title"><span>â–½</span> Filtros <button id="smapClearAll">Limpiar todo</button></div>
+      <div class="smap-side-title"><span>▽</span> Filtros <button id="smapClearAll">Limpiar todo</button></div>
       <label>Tag
         <select id="smapTagFilter" class="smap-field">
           <option value="">Todos</option>
@@ -939,7 +946,7 @@ export class StrategicMapReport extends BaseReport {
         </select>
       </label>
       ${['Estado', 'Departamento', 'Rol', 'Proveedor', 'Ambiente', 'Criticidad', 'Dominio'].map(label => `<label>${label}<select class="smap-field" disabled><option>Todos</option></select></label>`).join('')}
-      <label>BÃºsqueda por texto
+      <label>Búsqueda por texto
         <input id="smapSearch" class="smap-field" value="${escapeHtml(this.searchText)}" placeholder="Buscar en el mapa..." />
       </label>
     </section>`;
@@ -966,9 +973,9 @@ export class StrategicMapReport extends BaseReport {
 
   renderQuickNav() {
     return `<section class="smap-side-card">
-      <div class="smap-side-title">NavegaciÃ³n rÃ¡pida</div>
+      <div class="smap-side-title">Navegación rápida</div>
       <button class="smap-side-button" id="smapHideOrphans">${this.showOnlyOrphans ? 'Ver todos los elementos' : 'Ver solo elementos sin relaciones'}</button>
-      <button class="smap-side-button" id="smapScrollTop">Ver mapa en modo jerÃ¡rquico</button>
+      <button class="smap-side-button" id="smapScrollTop">Ver mapa en modo jerárquico</button>
       <p class="smap-tip">Consejo: usa los filtros para explorar en detalle. Haz clic en cualquier tarjeta para ver su ficha informativa.</p>
     </section>`;
   }
@@ -985,8 +992,8 @@ export class StrategicMapReport extends BaseReport {
     const parts = desc.split(/\n+/).filter(p => p.trim());
     return parts.map(p => {
       const trimmed = p.trim();
-      if (trimmed.startsWith('MisiÃ³n:')) return `<span class="smap-desc-tag smap-desc-mision">MisiÃ³n</span><span class="smap-desc-text">${escapeHtml(trimmed.replace('MisiÃ³n:', '').trim())}</span>`;
-      if (trimmed.startsWith('VisiÃ³n:')) return `<span class="smap-desc-tag smap-desc-vision">VisiÃ³n</span><span class="smap-desc-text">${escapeHtml(trimmed.replace('VisiÃ³n:', '').trim())}</span>`;
+      if (trimmed.startsWith('Misión:')) return `<span class="smap-desc-tag smap-desc-mision">Misión</span><span class="smap-desc-text">${escapeHtml(trimmed.replace('Misión:', '').trim())}</span>`;
+      if (trimmed.startsWith('Visión:')) return `<span class="smap-desc-tag smap-desc-vision">Visión</span><span class="smap-desc-text">${escapeHtml(trimmed.replace('Visión:', '').trim())}</span>`;
       return `<span class="smap-desc-text">${escapeHtml(trimmed)}</span>`;
     }).join('');
   }
@@ -1134,6 +1141,8 @@ export class StrategicMapReport extends BaseReport {
   openDetailPanel(id, layer) {
     const typeMap = { estrategicos: 'Objective', tacticos: 'Objective', iniciativas: 'Initiative', capability: 'BusinessCapability', process: 'BusinessContext', application: 'Application', interface: 'Interface', dataobject: 'DataObject', itcomponent: 'ITComponent' };
     const type = typeMap[layer] || 'Objective';
+    const factsheetPath = `/factsheet/${type}/${id}`;
+    const factsheetUrl = `${this.setup?.settings?.baseUrl || 'https://br.leanix.net/AlicorpSAASandbox'}${factsheetPath}`;
     const layerDef = LAYERS.find(l => l.key === layer);
     let item = null;
     let isSummary = false;
@@ -1153,16 +1162,17 @@ export class StrategicMapReport extends BaseReport {
     panel.className = 'smap-aside';
     panel.innerHTML = `
       <div class="smap-aside-header" style="border-color:${layerDef?.color || '#e2e8f0'}">
-        <div class="smap-aside-icon" style="background:${layerDef?.color || '#64748b'}">${layerDef?.icon || 'â—Ž'}</div>
+        <div class="smap-aside-icon" style="background:${layerDef?.color || '#64748b'}">${layerDef?.icon || '◎'}</div>
         <div class="smap-aside-title">
           <div class="smap-aside-name">${escapeHtml(item.name || item.fullName || '')}</div>
           <div class="smap-aside-type">${escapeHtml(layerDef?.label || type)}</div>
         </div>
-        <button class="smap-aside-close">Ã—</button>
+        <button class="smap-aside-close">×</button>
       </div>
       <div class="smap-aside-body">${this.renderDetailBody(item, layer, layerDef)}</div>
       <div class="smap-aside-footer">
-        <a class="smap-aside-link" href="https://br.leanix.net/AlicorpSAASandbox/factsheet/${type}/${id}" target="_top">Ver en LeanIX â†’</a>
+        <button class="smap-aside-link" type="button" data-path="${escapeHtml(factsheetPath)}">Ver en LeanIX</button>
+        <button class="smap-aside-copy" type="button" data-href="${escapeHtml(factsheetUrl)}">Copiar URL</button>
       </div>
     `;
     if (isSummary) {
@@ -1171,6 +1181,49 @@ export class StrategicMapReport extends BaseReport {
 
     this.container.querySelector('.smap').appendChild(panel);
     panel.querySelector('.smap-aside-close').addEventListener('click', () => panel.remove());
+    panel.querySelector('.smap-aside-link')?.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openLeanixLink(event.currentTarget.dataset.path);
+    });
+    panel.querySelector('.smap-aside-copy')?.addEventListener('click', async event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const button = event.currentTarget;
+      await this.copyToClipboard(button.dataset.href || '');
+      button.textContent = 'URL copiada';
+      window.setTimeout(() => { button.textContent = 'Copiar URL'; }, 1800);
+    });
+  }
+
+  openLeanixLink(path) {
+    if (!path) return;
+    try {
+      if (window.lx?.openLink) {
+        window.lx.openLink(path);
+        return;
+      }
+    } catch (error) {
+      console.warn('No se pudo abrir con lx.openLink', error);
+    }
+    this.copyToClipboard(`${this.setup?.settings?.baseUrl || 'https://br.leanix.net/AlicorpSAASandbox'}${path}`);
+  }
+
+  async copyToClipboard(text) {
+    if (!text) return;
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const input = document.createElement('textarea');
+    input.value = text;
+    input.setAttribute('readonly', 'readonly');
+    input.style.position = 'fixed';
+    input.style.left = '-9999px';
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    input.remove();
   }
 
   renderDetailBody(item, layer, layerDef) {
@@ -1187,7 +1240,7 @@ export class StrategicMapReport extends BaseReport {
     const gapBlock = () => {
       const gap = this.gapReport?.evaluations?.get(`${layer}:${item.id}`);
       if (!gap) return '';
-      const title = gap.status === 'complete' ? 'Completitud mÃ­nima cerrada' : `${gap.missing.length} gaps minimos`;
+      const title = gap.status === 'complete' ? 'Completitud mínima cerrada' : `${gap.missing.length} gaps minimos`;
       return `<div class="smap-gap-detail smap-gap-detail--${gap.status}">
         <div class="smap-gap-detail-head"><strong>${gap.score}%</strong><span>${title}</span></div>
         ${gap.missing.length ? `<ul>${gap.missing.map(missing => `<li><b>${escapeHtml(missing.field)}:</b> ${escapeHtml(missing.message)} <em>${escapeHtml(missing.action)}</em></li>`).join('')}</ul>` : '<p>No se detectaron faltantes minimos para este objeto.</p>'}
@@ -1196,12 +1249,12 @@ export class StrategicMapReport extends BaseReport {
 
     if (item.items) {
       return [
-        field('AplicaciÃ³n', item.appName),
+        field('Aplicación', item.appName),
         field('Total', item.count),
         `<div class="smap-aside-list">
           ${item.items.map(child => `<button class="smap-aside-list-item" data-id="${child.id}">
             <strong>${escapeHtml(child.name || '')}</strong>
-            <span>${escapeHtml(child.code || 'Sin cÃ³digo')}</span>
+            <span>${escapeHtml(child.code || 'Sin código')}</span>
           </button>`).join('')}
         </div>`,
       ].join('');
@@ -1210,11 +1263,11 @@ export class StrategicMapReport extends BaseReport {
     if (layer === 'estrategicos' || layer === 'tacticos') {
       return [
         gapBlock(),
-        item.fullName ? fieldHtml('JerarquÃ­a', breadcrumb(item.fullName)) : '',
+        item.fullName ? fieldHtml('Jerarquía', breadcrumb(item.fullName)) : '',
         item.lxState ? field('Estado', stateLabel(item.lxState)) : '',
         item.completion != null ? fieldHtml('Completitud', completionBar(item.completion)) : '',
-        item.orgName ? field('OrganizaciÃ³n', item.orgName) : '',
-        item.description ? field('DescripciÃ³n', item.description) : '',
+        item.orgName ? field('Organización', item.orgName) : '',
+        item.description ? field('Descripción', item.description) : '',
         item.principio ? field('Principio', item.principio) : '',
         item.tags?.length ? fieldHtml('Tags', chips(item.tags, layerDef?.color)) : '',
         item.capNames?.length ? fieldHtml('Capacidades vinculadas', chips(item.capNames, '#003056')) : '',
@@ -1224,10 +1277,10 @@ export class StrategicMapReport extends BaseReport {
 
     return [
       gapBlock(),
-      item.code ? field('CÃ³digo', item.code) : '',
+      item.code ? field('Código', item.code) : '',
       item.orgNames?.length ? fieldHtml('Organizaciones', chips(item.orgNames, '#0f766e')) : '',
-      item.orgNames && item.orgNames.length === 0 ? field('OrganizaciÃ³n', 'Sin organizaciÃ³n relacionada') : '',
-      item.description ? field('DescripciÃ³n', item.description) : '',
+      item.orgNames && item.orgNames.length === 0 ? field('Organización', 'Sin organización relacionada') : '',
+      item.description ? field('Descripción', item.description) : '',
       item.tags?.length ? fieldHtml('Tags', chips(item.tags, layerDef?.color)) : '',
     ].join('');
   }

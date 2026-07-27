@@ -43,7 +43,7 @@ export class CapabilityPosterReport extends BaseReport {
     }
   }
 
-  // ─── Tree building ───
+  // â”€â”€â”€ Tree building â”€â”€â”€
   buildTrees() {
     const roots = this.allNodes.filter(n => !n.relToParent || n.relToParent.edges.length === 0);
     this.trees = roots.map(r => this.buildNode(r));
@@ -87,7 +87,7 @@ export class CapabilityPosterReport extends BaseReport {
     return getShortName(dn);
   }
 
-  // ─── Domain chip logic (same as Angular) ───
+  // â”€â”€â”€ Domain chip logic (same as Angular) â”€â”€â”€
   collectDomains(tree) {
     const set = new Set();
     const tags = tree.data?.tags || [];
@@ -127,16 +127,16 @@ export class CapabilityPosterReport extends BaseReport {
   }
 
   getFactSheetUrl(id) {
-    return `factsheet/BusinessCapability/${id}`;
+    return `/factsheet/BusinessCapability/${id}`;
   }
 
-  // ─── KPIs (placeholder — no criticidad data from LeanIX yet) ───
+  // â”€â”€â”€ KPIs (placeholder â€” no criticidad data from LeanIX yet) â”€â”€â”€
   getKpis() {
     // Future: compute from tags or custom fields
     return { total: 0, cortoAlto: 0, cortoMedio: 0, largoAlto: 0, largoMedio: 0, pctCorto: 0, pctLargo: 0 };
   }
 
-  // ─── Render ───
+  // â”€â”€â”€ Render â”€â”€â”€
   render() {
     const left = ['DTO', 'FTP', 'PTP', 'PTM'].map(c => this.getRoot(c)).filter(Boolean);
     const front = ['OTC'].map(c => this.getRoot(c)).filter(Boolean);
@@ -150,17 +150,17 @@ export class CapabilityPosterReport extends BaseReport {
       <div class="poster">
         <div class="poster-header">
           <div class="poster-title">
-            <h1>Capacidades críticas</h1>
+            <h1>Capacidades crÃ­ticas</h1>
             <span class="poster-sub">/ PRELIMINAR</span>
           </div>
           <select id="posterFilter" class="poster-filter">
             <option value="">Todas</option>
-            <option value="any">🔥 Solo críticas</option>
-            <option value="corto_alto">🟠 CP Alto</option>
-            <option value="corto_medio">🟡 CP Medio</option>
-            <option value="largo_alto">🟣 LP Alto</option>
-            <option value="largo_medio">🔮 LP Medio</option>
-            <option value="none">⬜ Sin criticidad</option>
+            <option value="any">ðŸ”¥ Solo crÃ­ticas</option>
+            <option value="corto_alto">ðŸŸ  CP Alto</option>
+            <option value="corto_medio">ðŸŸ¡ CP Medio</option>
+            <option value="largo_alto">ðŸŸ£ LP Alto</option>
+            <option value="largo_medio">ðŸ”® LP Medio</option>
+            <option value="none">â¬œ Sin criticidad</option>
           </select>
         </div>
         <div class="layout-root">
@@ -193,7 +193,7 @@ export class CapabilityPosterReport extends BaseReport {
       </div>`;
   }
 
-  // ─── Block: Rows (DTO, FTP, PTP, PTM, PTD, MAI) ───
+  // â”€â”€â”€ Block: Rows (DTO, FTP, PTP, PTM, PTD, MAI) â”€â”€â”€
   renderBlockRows(root) {
     const codigo = this.getCodigo(root.data);
     const nombre = this.getNombre(root);
@@ -212,7 +212,7 @@ export class CapabilityPosterReport extends BaseReport {
           cellsHtml += `<div class="cell dom-anchor" data-id="${n2.data.id}"><span class="cell-code">${escapeHtml(this.getCodigo(n2.data))}</span> ${escapeHtml(this.getNombre(n2))} ${n2chip}</div>`;
         }
       } else {
-        // N1 without children — render as clickable cell
+        // N1 without children â€” render as clickable cell
         const n1chip = this.chipHtml(this.domainChipN1(n1, root));
         const code = this.getCodigo(n1.data);
         cellsHtml += `<div class="cell dom-anchor" data-id="${n1.data.id}">${code ? `<span class="cell-code">${escapeHtml(code)}</span> ` : ''}${escapeHtml(this.getNombre(n1))} ${n1chip}</div>`;
@@ -220,12 +220,12 @@ export class CapabilityPosterReport extends BaseReport {
     }
 
     return `<div class="blk blk-rows">
-      <div class="blk-title dom-anchor">${escapeHtml(codigo)} — ${escapeHtml(nombre)} ${chip}</div>
+      <div class="blk-title dom-anchor">${escapeHtml(codigo)} â€” ${escapeHtml(nombre)} ${chip}</div>
       ${cellsHtml}
     </div>`;
   }
 
-  // ─── Block: Wide columns (OTC, SOP) ───
+  // â”€â”€â”€ Block: Wide columns (OTC, SOP) â”€â”€â”€
   renderBlockWide(root) {
     const codigo = this.getCodigo(root.data);
     const nombre = this.getNombre(root);
@@ -250,7 +250,7 @@ export class CapabilityPosterReport extends BaseReport {
         </div>`;
       }
       return `<div class="blk blk-wide">
-        <div class="blk-title dom-anchor">${escapeHtml(codigo)} — ${escapeHtml(nombre)} ${chip}</div>
+        <div class="blk-title dom-anchor">${escapeHtml(codigo)} â€” ${escapeHtml(nombre)} ${chip}</div>
         <div class="blk-cols">${colsHtml}</div>
       </div>`;
     }
@@ -270,7 +270,7 @@ export class CapabilityPosterReport extends BaseReport {
       </div>`;
     }
     return `<div class="blk blk-wide">
-      <div class="blk-title dom-anchor">${escapeHtml(codigo)} — ${escapeHtml(nombre)} ${chip}</div>
+      <div class="blk-title dom-anchor">${escapeHtml(codigo)} â€” ${escapeHtml(nombre)} ${chip}</div>
       <div class="blk-cols">${colsHtml}</div>
     </div>`;
   }
@@ -296,7 +296,7 @@ export class CapabilityPosterReport extends BaseReport {
     return [...groups.values()].filter(g => g.items.length > 0);
   }
 
-  // ─── Block: Transposed (TT) ───
+  // â”€â”€â”€ Block: Transposed (TT) â”€â”€â”€
   renderBlockTransposed(root) {
     const codigo = this.getCodigo(root.data);
     const nombre = this.getNombre(root);
@@ -336,7 +336,7 @@ export class CapabilityPosterReport extends BaseReport {
     }
 
     return `<div class="blk blk-transposed">
-      <div class="blk-title dom-anchor">${escapeHtml(codigo)} — ${escapeHtml(nombre)} ${chip}</div>
+      <div class="blk-title dom-anchor">${escapeHtml(codigo)} â€” ${escapeHtml(nombre)} ${chip}</div>
       ${rowsHtml}
     </div>`;
   }
@@ -356,7 +356,7 @@ export class CapabilityPosterReport extends BaseReport {
     return [...groups.values()];
   }
 
-  // ─── Events ───
+  // â”€â”€â”€ Events â”€â”€â”€
   bindEvents() {
     const filter = this.container.querySelector('#posterFilter');
     if (filter) {
@@ -365,19 +365,23 @@ export class CapabilityPosterReport extends BaseReport {
       });
     }
 
-    // Click on any cell/tcell → open factsheet via LeanIX navigation
+    // Click on any cell/tcell -> open factsheet via LeanIX navigation
     this.container.addEventListener('click', (e) => {
       const cell = e.target.closest('[data-id]');
       if (cell) {
-        const id = cell.dataset.id;
-        // Use postMessage to parent (LeanIX shell) to navigate
-        window.parent.postMessage({
-          type: 'openFactSheet',
-          factSheet: { id, type: 'BusinessCapability' }
-        }, '*');
-        // Fallback: try lx.openLink
-        try { lx.openLink(`/factsheet/BusinessCapability/${id}`); } catch(e) {}
+        this.openLeanixLink(this.getFactSheetUrl(cell.dataset.id));
       }
     });
+  }
+
+  openLeanixLink(path) {
+    if (!path) return;
+    try {
+      if (window.lx?.openLink) {
+        window.lx.openLink(path);
+      }
+    } catch (error) {
+      console.warn('No se pudo abrir con lx.openLink', error);
+    }
   }
 }

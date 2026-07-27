@@ -45,6 +45,72 @@ export async function exportPDF(data, mv, orgName, sourceElement) {
 }
 
 export function exportGapsExcel(gapReport, mv, orgName) {
+  const summaryRowsV2 = [
+    ['Metrica', 'Valor'],
+    ['Vista', mv?.name || orgName || 'Mapa Estrategico'],
+    ['Total entidades evaluadas', gapReport.summary.total],
+    ['Completas', gapReport.summary.complete],
+    ['Con gaps', gapReport.summary.withGaps],
+    ['Criticas', gapReport.summary.critical],
+    ['Completitud promedio', `${gapReport.summary.avgScore}%`],
+    ['Filas de detalle', gapReport.rows.length],
+  ];
+
+  const byTypeRowsV2 = [
+    ['Tipo', 'Total', 'Completas', 'Con gaps', 'Criticas', 'Score promedio'],
+    ...gapReport.byLayer.map(row => [row.label, row.total, row.complete, row.withGaps, row.critical, `${row.avgScore}%`]),
+  ];
+
+  const detailRowsV2 = [
+    ['Tipo', 'Entidad', 'ID interno LeanIX', 'ID externo / Codigo', 'Estado', 'Score', 'Severidad', 'Total gaps', 'Gaps criticos', 'Gaps medios', 'Columnas / relaciones faltantes', 'Detalle', 'Accion recomendada'],
+    ...gapReport.rows.map(row => [
+      row.layerLabel,
+      row.name,
+      row.leanixId || row.id,
+      row.code,
+      row.statusLabel,
+      row.score,
+      row.severityLabel,
+      row.gapCount,
+      row.criticalGapCount,
+      row.mediumGapCount,
+      row.missingFieldsText || row.field,
+      row.message,
+      row.action,
+    ]),
+  ];
+
+  const htmlV2 = `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          body { font-family: Segoe UI, Arial, sans-serif; }
+          h1 { color: #122033; }
+          h2 { margin-top: 24px; color: #1f3a5f; }
+          table { border-collapse: collapse; width: 100%; margin-bottom: 18px; }
+          th { background: #122033; color: #fff; font-weight: 700; }
+          th, td { border: 1px solid #d9e4f0; padding: 6px 8px; font-size: 12px; vertical-align: top; }
+          .critical { background: #fee2e2; }
+          .warning { background: #fef3c7; }
+          .complete { background: #dcfce7; }
+        </style>
+      </head>
+      <body>
+        <h1>Resumen de Gaps - Mapa Estrategico</h1>
+        <h2>Resumen</h2>
+        ${tableToHtml(summaryRowsV2)}
+        <h2>Resumen por tipo</h2>
+        ${tableToHtml(byTypeRowsV2)}
+        <h2>Detalle por objeto</h2>
+        ${tableToHtml(detailRowsV2, row => row[6])}
+      </body>
+    </html>`;
+
+  const blobV2 = new Blob([htmlV2], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  downloadBlob(blobV2, `gaps-mapa-estrategico-${slugify(mv?.name || orgName)}.xls`);
+  return;
+
   const summaryRows = [
     ['Métrica', 'Valor'],
     ['Vista', mv?.name || orgName || 'Mapa Estratégico'],

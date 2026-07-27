@@ -239,7 +239,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  min-width: 1120px;
+  min-width: 0;
   padding: 8px 0 20px;
   transform-origin: top left;
 }
@@ -248,7 +248,7 @@
 .smap-layer {
   position: relative;
   display: grid;
-  grid-template-columns: 206px minmax(0, 1fr);
+  grid-template-columns: 180px minmax(0, 1fr);
   min-height: 70px;
   border-bottom: 1px solid #dfe8f4;
 }
@@ -303,12 +303,15 @@
 
 .smap-layer-cards {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  justify-content: safe center;
+  gap: 8px;
   min-height: 70px;
-  padding: 12px 22px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #dbe5f1 transparent;
 }
 
 .smap-root-card {
@@ -322,10 +325,11 @@
   z-index: 4;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  width: 245px;
-  min-height: 58px;
-  padding: 11px 13px;
+  gap: 8px;
+  flex: 0 0 auto;
+  width: 200px;
+  min-height: 54px;
+  padding: 9px 11px;
   border: 1.5px solid var(--card-color);
   border-radius: 8px;
   background: linear-gradient(180deg, #fff 0%, var(--card-bg, #f8fafc) 100%);
@@ -991,7 +995,10 @@
 
 .smap-aside-link {
   display: block;
+  width: 100%;
   padding: 10px;
+  border: 0;
+  box-sizing: border-box;
   border-radius: 6px;
   background: #122033;
   color: #fff;
@@ -999,6 +1006,21 @@
   text-decoration: none;
   font-size: 12px;
   font-weight: 850;
+  cursor: pointer;
+}
+
+.smap-aside-copy {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 @media (max-width: 1280px) {
