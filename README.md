@@ -1,27 +1,42 @@
 # LeanIX Custom Reports
 
-Batería de reportes personalizados para LeanIX.
+Batería de reportes personalizados para LeanIX — Alicorp.
 
 ## Arquitectura
 
 ```
 leanix-reports/
+├── config/
+│   └── webpack.base.js      ← Config webpack compartida (única fuente de verdad)
 ├── packages/
 │   ├── shared/              ← Código compartido (utils, estilos, helpers)
 │   ├── capability-tags/     ← Business Capability Map with Tags
 │   ├── capability-poster/   ← Capability Poster
+│   ├── strategic-map/       ← Mapa Estratégico Relacional
+│   ├── technical-fit/       ← Technical Fit — Evaluación automática
+│   ├── software-quadrant/   ← Software Health Quadrant (Agilidad vs Resiliencia)
 │   └── [nuevo-reporte]/     ← Agregar nuevos reportes aquí
 ├── scripts/
-│   ├── new-report.js        ← Script para scaffolding de nuevos reportes
+│   ├── new-report.js        ← Scaffold de nuevos reportes
 │   └── upload.js            ← Script de upload
-├── Makefile                 ← Automatización de tareas
-├── package.json             ← Dependencias compartidas (hoisted)
+├── Makefile                 ← Automatización (auto-detecta reportes)
+├── package.json             ← Dependencias hoisted (incluyendo webpack devDeps)
 └── README.md
 ```
 
-**Monorepo con dependencias hoisted**: todas las `node_modules` viven en la raíz. Cada reporte en `packages/` es un proyecto independiente con su propio `package.json` pero comparte las dependencias instaladas en la raíz. El Makefile crea un symlink (`mklink /J`) de `node_modules` en cada reporte para que el CLI de LeanIX las encuentre.
+### Principios de la arquitectura
 
-**Shared package** (`packages/shared/`): contiene utilidades reutilizables que se importan con `@shared/` desde cualquier reporte:
+**Monorepo con dependencias hoisted**: todas las `node_modules` viven en la raíz. Cada reporte en `packages/` es independiente pero comparte las dependencias. El Makefile crea un symlink (`mklink /J`) de `node_modules` en cada reporte para que el CLI de LeanIX las encuentre.
+
+**Config webpack centralizada** (`config/webpack.base.js`): todos los reportes extienden esta config con una sola línea. Si cambia un loader, alias o el devServer, se modifica en un solo lugar.
+
+```js
+// webpack.config.js de cualquier reporte
+var createWebpackConfig = require('../../config/webpack.base');
+module.exports = createWebpackConfig(__dirname);
+```
+
+**Shared package** (`packages/shared/`): utilidades reutilizables importadas con `@shared/`:
 - `BaseReport` — Clase base con loading, error y empty states
 - `escapeHtml(str)` — Escape XSS
 - `getShortName(displayName)` — Extrae nombre corto de path LeanIX
@@ -30,7 +45,15 @@ leanix-reports/
 - `graphQL(query)` — Wrapper para `lx.executeGraphQL`
 - `styles/base.css` — Estilos base compartidos
 
-**Configuración de credenciales**: debes crear manualmente el archivo `c:\enviroment\leanix.json` con tu API token de LeanIX en el siguiente formato:
+**Makefile auto-detecta reportes**: no hay targets hardcodeados por reporte. Al agregar un nuevo reporte en `packages/`, automáticamente queda disponible en `make dev`, `make build`, `make upload`, etc.
+
+**devDependencies hoisted**: las dependencias de webpack (`babel-loader`, `css-loader`, etc.) están declaradas solo en el `package.json` raíz. Los `package.json` de cada reporte solo declaran sus dependencias de runtime específicas.
+
+---
+
+## Credenciales
+
+Crear manualmente `c:\enviroment\leanix.json`:
 
 ```json
 {
@@ -39,89 +62,67 @@ leanix-reports/
 }
 ```
 
-Este archivo se copia automáticamente al reporte antes de ejecutar. Nunca se commitea.
+El Makefile lo copia automáticamente antes de cada `dev` o `upload`. Nunca se commitea.
 
 ---
 
-## Sin Make (pasos manuales)
+## Comandos
 
-### 1. Instalar dependencias
-
-```bash
-npm install
-```
-
-### 2. Configurar credenciales
-
-Copiar tu archivo de credenciales al reporte que vas a trabajar:
-
-```bash
-copy c:\enviroment\leanix.json packages\capability-tags\lxr.json
-```
-
-### 3. Crear symlink de node_modules (si no existe)
-
-```bash
-mklink /J packages\capability-tags\node_modules node_modules
-```
-
-### 4. Levantar dev server
-
-```bash
-cd packages\capability-tags
-npm start
-```
-
-### 5. Subir reporte
-
-```bash
-cd packages\capability-tags
-npm run upload
-```
-
-### 6. Crear nuevo reporte
-
-```bash
-node scripts\new-report.js mi-reporte
-```
-
----
-
-## Con Make
-
-### Requisito
-
-Tener `make` disponible (viene con Git Bash, Chocolatey: `choco install make`, o WSL).
-
-### Comandos principales
+### Con Make (recomendado)
 
 | Comando | Descripción |
 |---------|-------------|
 | `make install` | Instala todas las dependencias |
-| `make dev REPORT=capability-tags` | Levanta dev server (copia lxr.json + symlink automático) |
-| `make dev-tags` | Atajo para capability-tags |
-| `make dev-poster` | Atajo para capability-poster |
-| `make build REPORT=capability-tags` | Build de un reporte |
+| `make dev REPORT=software-quadrant` | Levanta dev server |
+| `make build REPORT=software-quadrant` | Build de un reporte |
 | `make build-all` | Build de todos los reportes |
-| `make upload REPORT=capability-tags` | Sube un reporte a LeanIX |
+| `make upload REPORT=software-quadrant` | Sube un reporte a LeanIX |
 | `make upload-all` | Sube todos los reportes |
 | `make new REPORT=mi-reporte` | Scaffold de nuevo reporte |
-| `make bump REPORT=capability-tags` | Bump de versión patch |
+| `make bump REPORT=software-quadrant` | Bump de versión patch |
 | `make clean` | Elimina carpetas dist |
-| `make list` | Lista reportes disponibles |
-| `make help` | Muestra ayuda |
+| `make list` | Lista reportes disponibles (auto-detectados) |
 
-### Flujo típico con Make
+### Sin Make (pasos manuales)
 
 ```bash
-# Primera vez
-make install
+# 1. Instalar dependencias
+npm install
 
-# Desarrollar
-make dev REPORT=capability-tags
+# 2. Copiar credenciales
+copy c:\enviroment\leanix.json packages\software-quadrant\lxr.json
 
-# Subir a producción
-make upload REPORT=capability-tags
+# 3. Crear symlink de node_modules (si no existe)
+mklink /J packages\software-quadrant\node_modules node_modules
+
+# 4. Levantar dev server
+cd packages\software-quadrant
+npm start
 ```
 
-El Makefile automatiza: copiar `lxr.json` desde la ruta centralizada, crear el symlink de `node_modules`, y ejecutar el comando correspondiente.
+---
+
+## Crear un nuevo reporte
+
+```bash
+make new REPORT=mi-reporte
+make dev REPORT=mi-reporte
+```
+
+El scaffold genera automáticamente:
+- `package.json` limpio (sin devDeps duplicadas)
+- `webpack.config.js` que extiende `config/webpack.base.js`
+- `src/index.html`, `src/index.js`, `src/report.js` con estructura base
+- `src/assets/report.css`
+
+---
+
+## Reportes disponibles
+
+| Reporte | Descripción |
+|---------|-------------|
+| `capability-tags` | Business Capability Map con filtros por tag |
+| `capability-poster` | Poster horizontal de capacidades críticas |
+| `strategic-map` | Mapa estratégico relacional multi-capa |
+| `technical-fit` | Evaluación automática de Technical Fit del portafolio |
+| `software-quadrant` | Cuadrante de salud de software (Agilidad vs Resiliencia) |
