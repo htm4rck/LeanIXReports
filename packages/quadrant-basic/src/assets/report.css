@@ -1,0 +1,26 @@
+.qb {
+  font-family: sans-serif;
+  padding: 16px;
+}
+
+.qb-title {
+  font-size: 18px;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.qb-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.qb-tooltip {
+  position: absolute;
+  background: #1e293b;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+}

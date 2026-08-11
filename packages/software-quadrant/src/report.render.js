@@ -1,5 +1,5 @@
 /**
- * report.render.js — CAPA DE PRESENTACIÓN
+ * 3. report.render.js — CAPA DE PRESENTACIÓN
  */
 
 import { escapeHtml } from '@shared/index.js';
@@ -8,8 +8,10 @@ import {
   getQuartileColor, getQuartileLabel, getRiskLevel,
   getBreaches, getRecommendation, getQuadrantCounts,
   getPortfolioKPIs, getTopCritical,
+  LIFECYCLE_LABEL, SUITABILITY_LABEL, ARCH_LABEL, HOSTING_LABEL, label,
 } from './report.calc.js';
 
+// 3.1 Shell principal: ensambla todas las secciones del reporte
 export function renderShell(apps, filters) {
   const kpis   = getPortfolioKPIs(apps);
   const counts = getQuadrantCounts(apps);
@@ -28,6 +30,7 @@ export function renderShell(apps, filters) {
     </div>`;
 }
 
+// 3.2 Tooltip del canvas al hacer hover sobre una burbuja
 export function renderTooltip(app) {
   const risk = getRiskLevel(app.agility, app.resilience);
   return `
@@ -37,6 +40,7 @@ export function renderTooltip(app) {
     <div class="sq-tt-risk" style="color:${risk.color}">${risk.label} riesgo</div>`;
 }
 
+// 3.3 Panel de detalle lateral para una app seleccionada
 export function renderDetailPanel(app) {
   const risk       = getRiskLevel(app.agility, app.resilience);
   const breaches   = getBreaches(app);
@@ -70,9 +74,11 @@ export function renderDetailPanel(app) {
       ${app.TipoAplicacion     ? `<div><span>Tipo de aplicación</span><b>${escapeHtml(app.TipoAplicacion)}</b></div>` : ''}
       ${app.criticidadDeDatos  ? `<div><span>Criticidad de datos</span><b>${escapeHtml(app.criticidadDeDatos)}</b></div>` : ''}
       ${app.businessCriticality ? `<div><span>Criticidad de negocio</span><b>${escapeHtml({ missionCritical:'Misión crítica', businessCritical:'Crítica de negocio', businessOperational:'Operacional', administrativeService:'Administrativa' }[app.businessCriticality] ?? app.businessCriticality)}</b></div>` : ''}
-      ${app.TipoDeArquitectura  ? `<div><span>Arquitectura</span><b>${escapeHtml(app.TipoDeArquitectura)}</b></div>` : ''}
-      ${app.lxHostingType      ? `<div><span>Hosting</span><b>${escapeHtml(app.lxHostingType)}</b></div>` : ''}
-      ${app.lifecycle?.currentPhase ? `<div><span>Lifecycle</span><b>${escapeHtml(app.lifecycle.currentPhase)}</b></div>` : ''}
+      ${app.technicalSuitability ? `<div><span>Evaluación técnica</span><b>${escapeHtml(label(SUITABILITY_LABEL, app.technicalSuitability))}</b></div>` : ''}
+      ${app.TipoDeArquitectura  ? `<div><span>Arquitectura</span><b>${escapeHtml(label(ARCH_LABEL, app.TipoDeArquitectura))}</b></div>` : ''}
+      ${app.lxHostingType       ? `<div><span>Hosting</span><b>${escapeHtml(label(HOSTING_LABEL, app.lxHostingType))}</b></div>` : ''}
+      ${app.lifecycle?.currentPhase ? `<div><span>Ciclo de vida</span><b>${escapeHtml(label(LIFECYCLE_LABEL, app.lifecycle.currentPhase))}</b></div>` : ''}
+      ${app.RecoveryTimeObjective != null ? `<div><span>Tiempo de recuperación (RTO)</span><b>${app.RecoveryTimeObjective}h</b></div>` : ''}
     </div>
 
     ${breaches.length ? `
@@ -92,8 +98,7 @@ export function renderDetailPanel(app) {
     <div class="sq-detail-rec">${escapeHtml(rec)}</div>`;
 }
 
-// ─── Secciones privadas ───────────────────────────────────────────────────────
-
+// 3.4 Header con KPI cards y gauge de evaluación general
 function renderHeader(kpis, filters) {
   const agilityDelta    = kpis.avgAgility    - BENCHMARK.agility;
   const resilienceDelta = kpis.avgResilience - BENCHMARK.resilience;
@@ -165,6 +170,7 @@ function renderHeader(kpis, filters) {
     </header>`;
 }
 
+// 3.5 Barra de filtros: dominio, tipo, cuartil y búsqueda
 function renderFilterBar(apps, filters) {
   const domains = [...new Set(apps.map(a => a.domain))].sort();
   const types   = [...new Set(apps.map(a => a.TipoAplicacion).filter(Boolean))].sort();
@@ -212,6 +218,7 @@ function renderFilterBar(apps, filters) {
     </div>`;
 }
 
+// 3.6 Contenedor del canvas del cuadrante
 function renderQuadrant() {
   return `
     <section class="sq-quadrant">
@@ -240,6 +247,7 @@ function renderQuadrant() {
     </section>`;
 }
 
+// 3.7 Sidebar: distribución por cuartil, acciones rápidas y panel de detalle
 function renderSidebar(counts, total) {
   const pct = n => total ? Math.round(n / total * 100) : 0;
   const rows = [
@@ -278,6 +286,7 @@ function renderSidebar(counts, total) {
     </aside>`;
 }
 
+// 3.8 Tabla de top apps a intervenir
 function renderPriorityTable(apps) {
   if (!apps.length) return '';
   const riskBadge = (app) => {
@@ -328,14 +337,15 @@ function renderPriorityTable(apps) {
     </section>`;
 }
 
+// 3.9 Footer con resumen de metodología
 function renderFooter() {
   return `
     <footer class="sq-footer">
       <span>
-        <strong>Agilidad</strong> = technicalSuitability + bonus arquitectura &nbsp;|
-        <strong>Resiliencia</strong> = lifecycle + bonus hosting + bonus RTO &nbsp;|
-        <strong>Tamaño burbuja</strong> = criticidadDeDatos (campo LeanIX) &nbsp;|
-        <strong>Críticas</strong> = criticidadDeDatos Significativo o MuySignificativo
+        <strong>Agilidad</strong> = Evaluación técnica + tipo de arquitectura &nbsp;|
+        <strong>Resiliencia</strong> = Ciclo de vida + hosting + tiempo de recuperación (RTO) &nbsp;|
+        <strong>Tamaño burbuja</strong> = Criticidad de datos (LeanIX) &nbsp;|
+        <strong>Aplicaciones críticas</strong> = criticidadDeDatos Significativo o MuySignificativo
       </span>
       <span>Benchmark: CAST AIP (Agilidad ${BENCHMARK.agility} · Resiliencia ${BENCHMARK.resilience})</span>
     </footer>`;

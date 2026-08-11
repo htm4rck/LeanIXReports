@@ -1,0 +1,25 @@
+{
+  "name": "@leanix-reports/quadrant-basic",
+  "version": "1.0.0",
+  "description": "Quadrant Basic — ejemplo didáctico",
+  "author": "Alicorp",
+  "private": true,
+  "leanixReport": {
+    "id": "pe.com.alicorp.quadrantbasic",
+    "title": "Quadrant Basic",
+    "defaultConfig": {}
+  },
+  "leanixReportingCli": {
+    "distPath": "dist",
+    "buildCommand": "npx webpack"
+  },
+  "scripts": {
+    "build": "lxr build",
+    "start": "lxr start",
+    "upload": "lxr upload"
+  },
+  "dependencies": {
+    "@leanix/reporting": "^0.4.148",
+    "@leanix-reports/shared": "*"
+  }
+}

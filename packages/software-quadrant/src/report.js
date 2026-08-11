@@ -1,5 +1,5 @@
 /**
- * report.js — ORQUESTADOR
+ * 4. report.js — ORQUESTADOR
  */
 
 import { BaseReport } from '@shared/index.js';
@@ -11,6 +11,7 @@ import { renderShell, renderTooltip, renderDetailPanel } from './report.render.j
 const AXIS = { min: 0, max: 100 };
 const PAD  = { top: 40, right: 100, bottom: 50, left: 50 };
 
+// 4.1 Clase principal del reporte
 export class SoftwareQuadrantReport extends BaseReport {
   constructor(setup) {
     super(setup);
@@ -20,6 +21,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     this._selectedId = null;
   }
 
+  // 4.2 Apps filtradas según estado actual de filtros
   get filteredApps() {
     return this.apps.filter(a => {
       if (a.agility == null || a.resilience == null) return false;
@@ -34,6 +36,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     });
   }
 
+  // 4.3 Carga datos desde LeanIX y calcula scores
   async loadData() {
     this.showLoading('Cargando portafolio...');
     try {
@@ -45,6 +48,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     }
   }
 
+  // 4.4 Renderiza el shell y redibuja el canvas
   render() {
     const apps = this.filteredApps;
     this.container.innerHTML = renderShell(apps, this.filters);
@@ -53,6 +57,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     this.bindEvents();
   }
 
+  // 4.5 Escala el canvas por devicePixelRatio para pantallas de alta densidad
   _resizeCanvas() {
     const wrap   = this.container.querySelector('.sq-canvas-wrap');
     const canvas = this.container.querySelector('#sqCanvas');
@@ -72,6 +77,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     canvas._cssHeight = h;
   }
 
+  // 4.6 Dibuja el cuadrante: fondos, ejes, burbujas, badges y etiquetas
   drawChart(apps) {
     const canvas = this.container.querySelector('#sqCanvas');
     if (!canvas) return;
@@ -220,6 +226,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     });
   }
 
+  // 4.7 Registra todos los event listeners del reporte
   bindEvents() {
     const canvas  = this.container.querySelector('#sqCanvas');
     const tooltip = this.container.querySelector('#sqTooltip');
@@ -373,6 +380,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     });
   }
 
+  // 4.8 Descarga CSV con las apps filtradas
   _exportCSV(apps) {
     const headers = ['Aplicacion','Dominio','Tipo','CriticidadDeDatos','Agilidad','Resiliencia','Cuartil','Riesgo','Lifecycle','Hosting','RTO'];
     const rows = apps.map(a => [
@@ -396,6 +404,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     URL.revokeObjectURL(url);
   }
 
+  // 4.9 Muestra modal con tablas de metodología de cálculo
   _showMethodModal() {
     const existing = document.getElementById('sqMethodModal');
     if (existing) { existing.remove(); return; }
@@ -458,6 +467,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     modal.querySelector('.sq-modal-backdrop').addEventListener('click', () => modal.remove());
   }
 
+  // 4.10 Enlaza el botón de cierre del panel de detalle
   _bindDetailClose(detail) {
     detail.querySelector('#sqDetailClose')?.addEventListener('click', () => {
       this._selectedId = null;
@@ -466,6 +476,7 @@ export class SoftwareQuadrantReport extends BaseReport {
     });
   }
 
+  // 4.11 Convierte coordenadas del mouse a coordenadas CSS del canvas
   _coords(canvas, e) {
     const rect = canvas.getBoundingClientRect();
     return {

@@ -1,5 +1,5 @@
 /**
- * report.query.js — CAPA DE DATOS
+ * 1. report.query.js — CAPA DE DATOS
  *
  * Responsabilidad única: comunicarse con LeanIX.
  * - Define la query GraphQL con los campos que necesita este reporte.
@@ -9,16 +9,16 @@
  * solo se toca este archivo.
  *
  * Flujo:
- *   index.js → report.js → [fetchApplications()] → report.calc.js
+ *   index.js → report.js → [1.2 fetchApplications()] → report.calc.js
  */
 
 import { graphQL, getShortName } from '@shared/index.js';
 import { getCurrentPhase } from './report.calc.js';
 
-// 1. Query GraphQL: declara exactamente qué campos necesita el reporte.
-//    Agregar o quitar campos aquí no afecta ningún otro archivo.
-//    Nota: linesOfCode no es un campo estándar de LeanIX — el tamaño de
-//    burbuja se deriva de otros campos disponibles (ver report.calc.js).
+// 1.1 Query GraphQL: declara exactamente qué campos necesita el reporte.
+//     Agregar o quitar campos aquí no afecta ningún otro archivo.
+//     Nota: linesOfCode no es un campo estándar de LeanIX — el tamaño de
+//     burbuja se deriva de otros campos disponibles (ver report.calc.js).
 const QUERY = `{
   allFactSheets(factSheetType: Application) {
     edges {
@@ -42,14 +42,14 @@ const QUERY = `{
   }
 }`;
 
-// 2. Ejecuta la query y transforma cada nodo crudo en un objeto de dominio
-//    limpio. El resto del reporte solo trabaja con estos objetos, nunca
-//    con la respuesta raw de GraphQL.
+// 1.2 Ejecuta la query y transforma cada nodo crudo en un objeto de dominio
+//     limpio. El resto del reporte solo trabaja con estos objetos, nunca
+//     con la respuesta raw de GraphQL.
 export async function fetchApplications() {
   const result = await graphQL(QUERY);
 
-  // 3. Mapeo: nodo GraphQL → objeto de dominio Application
-  //    Solo se exponen los campos que el reporte realmente usa.
+  // 1.2.1 Mapeo: nodo GraphQL → objeto de dominio Application
+  //       Solo se exponen los campos que el reporte realmente usa.
   const apps = result.allFactSheets.edges.map(({ node: n }) => ({
     id: n.id,
     name: getShortName(n.displayName),                          // nombre corto sin jerarquía

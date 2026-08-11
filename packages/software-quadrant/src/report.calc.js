@@ -1,7 +1,8 @@
 /**
- * report.calc.js — CAPA DE LÓGICA DE NEGOCIO
+ * 2. report.calc.js — CAPA DE LÓGICA DE NEGOCIO
  */
 
+// 2.1 Constantes de referencia y configuración visual
 export const BENCHMARK = { agility: 63, resilience: 67 };
 
 // Colores por cuartil (estado de salud): índice 0=crítico → 3=saludable
@@ -14,6 +15,45 @@ export const QUADRANT_META = {
   bottomLeft:  { label: 'Evaluar / Modernización',     icon: '⚠️', desc: 'Baja agilidad y baja resiliencia. Alto riesgo para el negocio.' },
 };
 
+// 2.2 Traducciones a lenguaje de negocio — fuente única de verdad
+export const LIFECYCLE_LABEL = {
+  active:    'Activo',
+  phaseIn:   'En adopción',
+  phaseOut:  'En retiro',
+  endOfLife: 'Fin de vida',
+  plan:      'Planificado',
+};
+
+export const SUITABILITY_LABEL = {
+  fullyAppropriate: 'Totalmente adecuado',
+  appropriate:      'Adecuado',
+  adequate:         'Aceptable',
+  inappropriate:    'Inadecuado',
+  unreasonable:     'Obsoleto',
+};
+
+export const ARCH_LABEL = {
+  CloudNative:       'Cloud Native',
+  BasadaEnServicios: 'Basada en servicios',
+  Distribuida:       'Distribuida',
+  StandAlone:        'Monolítica (StandAlone)',
+};
+
+export const HOSTING_LABEL = {
+  saas:      'SaaS (nube gestionada)',
+  paas:      'PaaS (plataforma nube)',
+  iaas:      'IaaS (infraestructura nube)',
+  onPremise: 'On-Premise (local)',
+  hybrid:    'Híbrido',
+};
+
+// 2.3 Helper de traducción
+export function label(map, value) {
+  return map[value] ?? value ?? '—';
+}
+
+
+// 2.4 Tablas de puntuación para el cálculo de ejes
 const SUITABILITY_SCORE = {
   fullyAppropriate: 90,
   appropriate:      75,
@@ -32,6 +72,7 @@ const LIFECYCLE_SCORE = {
 const ARCH_BONUS = { CloudNative: 15, BasadaEnServicios: 8, Distribuida: 0, StandAlone: -10 };
 const HOST_BONUS = { saas: 10, paas: 8, iaas: 0, onPremise: -5 };
 
+// 2.5 Obtiene la fase activa del ciclo de vida
 export function getCurrentPhase(phases) {
   if (!phases?.length) return null;
   const now = new Date().toISOString().slice(0, 10);
@@ -43,9 +84,7 @@ export function getCurrentPhase(phases) {
   return current;
 }
 
-// Criticidad: prioridad 1 = criticidadDeDatos (custom Alicorp, bien poblado)
-//              prioridad 2 = businessCriticality (nativo LeanIX, casi sin datos)
-//              prioridad 3 = TipoAplicacion (siempre disponible, derivado)
+// 2.6 Mapas de criticidad y tamaño de burbuja
 const DATOS_MAP = {
   MuySignificativo: 'veryHigh',
   Significativo:    'high',
@@ -66,6 +105,7 @@ const TIPO_CRITICALITY = {
 const CRITICALITY_SIZE  = { veryHigh: 18, high: 13, medium: 9, low: 6 };
 const CRITICALITY_LABEL = { veryHigh: 'Muy alta', high: 'Alta', medium: 'Media', low: 'Baja' };
 
+// 2.7 Calcula agilidad, resiliencia, tamaño y criticidad de una app
 export function scoreApp(app) {
   const suitBase = SUITABILITY_SCORE[app.technicalSuitability];
   const agility = suitBase != null
@@ -88,7 +128,7 @@ export function scoreApp(app) {
   return { agility, resilience, size, criticality };
 }
 
-// Cuartil basado en 50/50 (cuadrantes visuales iguales)
+// 2.8 Determina el cuadrante según posición en el eje 50/50
 export function getQuartile(agility, resilience) {
   const highA = agility    >= 50;
   const highR = resilience >= 50;
@@ -98,16 +138,19 @@ export function getQuartile(agility, resilience) {
   return 'bottomLeft';
 }
 
+// 2.9 Color del cuadrante
 export function getQuartileColor(agility, resilience) {
   const q = getQuartile(agility, resilience);
   return { topRight: QUARTILE_COLORS[3], topLeft: QUARTILE_COLORS[2], bottomRight: QUARTILE_COLORS[1], bottomLeft: QUARTILE_COLORS[0] }[q];
 }
 
+// 2.10 Etiqueta del cuadrante
 export function getQuartileLabel(agility, resilience) {
   const q = getQuartile(agility, resilience);
   return { topRight: 'Cuartil superior', topLeft: '3er cuartil', bottomRight: '2do cuartil', bottomLeft: 'Cuartil inferior' }[q];
 }
 
+// 2.11 Nivel de riesgo basado en score promedio
 export function getRiskLevel(agility, resilience) {
   const score = (agility + resilience) / 2;
   if (score < 30) return { label: 'Muy alto', color: '#ef4444' };
@@ -116,18 +159,41 @@ export function getRiskLevel(agility, resilience) {
   return              { label: 'Bajo',     color: '#22c55e' };
 }
 
+// 2.12 Brechas detectadas con texto de negocio y fuente LeanIX
 export function getBreaches(app) {
   const b = [];
-  if (app.agility    != null && app.agility    < 50) b.push({ text: 'Baja agilidad',           source: `technicalSuitability: ${app.technicalSuitability ?? '—'}` });
-  if (app.resilience != null && app.resilience < 50) b.push({ text: 'Baja resiliencia',         source: `lifecycle: ${app.lifecycle?.currentPhase ?? '—'}` });
-  if (app.TipoDeArquitectura === 'StandAlone')        b.push({ text: 'Arquitectura monolítica',  source: 'TipoDeArquitectura: StandAlone' });
-  if (app.lxHostingType === 'onPremise')              b.push({ text: 'Hosting on-premise',       source: 'lxHostingType: onPremise' });
-  if (app.RecoveryTimeObjective > 8)                  b.push({ text: 'RTO elevado',              source: `RecoveryTimeObjective: ${app.RecoveryTimeObjective}h` });
-  if (app.lifecycle?.currentPhase === 'endOfLife')    b.push({ text: 'Fin de vida útil',         source: 'lifecycle: endOfLife' });
-  if (app.lifecycle?.currentPhase === 'phaseOut')     b.push({ text: 'En proceso de retiro',     source: 'lifecycle: phaseOut' });
+  if (app.agility    != null && app.agility    < 50) b.push({
+    text:   'Baja agilidad técnica',
+    source: `Evaluación técnica: ${label(SUITABILITY_LABEL, app.technicalSuitability)}`,
+  });
+  if (app.resilience != null && app.resilience < 50) b.push({
+    text:   'Baja resiliencia operativa',
+    source: `Ciclo de vida: ${label(LIFECYCLE_LABEL, app.lifecycle?.currentPhase)}`,
+  });
+  if (app.TipoDeArquitectura === 'StandAlone') b.push({
+    text:   'Arquitectura monolítica',
+    source: `Arquitectura: ${label(ARCH_LABEL, app.TipoDeArquitectura)} — dificulta cambios y escalabilidad`,
+  });
+  if (app.lxHostingType === 'onPremise') b.push({
+    text:   'Infraestructura on-premise',
+    source: `Hosting: ${label(HOSTING_LABEL, app.lxHostingType)} — mayor costo operativo y menor elasticidad`,
+  });
+  if (app.RecoveryTimeObjective > 8) b.push({
+    text:   'Tiempo de recuperación elevado',
+    source: `RTO: ${app.RecoveryTimeObjective}h — el negocio tolera máximo 8h de interrupción`,
+  });
+  if (app.lifecycle?.currentPhase === 'endOfLife') b.push({
+    text:   'Aplicación en fin de vida',
+    source: `Ciclo de vida: ${label(LIFECYCLE_LABEL, 'endOfLife')} — sin soporte del proveedor`,
+  });
+  if (app.lifecycle?.currentPhase === 'phaseOut') b.push({
+    text:   'Aplicación en proceso de retiro',
+    source: `Ciclo de vida: ${label(LIFECYCLE_LABEL, 'phaseOut')} — planificar migración`,
+  });
   return b;
 }
 
+// 2.13 Recomendación de acción según cuadrante
 export function getRecommendation(agility, resilience) {
   const q = getQuartile(agility, resilience);
   return {
@@ -138,6 +204,7 @@ export function getRecommendation(agility, resilience) {
   }[q];
 }
 
+// 2.14 Conteo de apps por cuadrante
 export function getQuadrantCounts(apps) {
   return {
     topRight:    apps.filter(a => a.agility >= 50 && a.resilience >= 50).length,
@@ -147,6 +214,7 @@ export function getQuadrantCounts(apps) {
   };
 }
 
+// 2.15 KPIs del portafolio completo
 export function getPortfolioKPIs(apps) {
   const total = apps.length;
   if (!total) return { avgAgility: 0, avgResilience: 0, healthy: 0, critical: 0, total: 0, overallScore: 0 };
@@ -162,7 +230,7 @@ export function getPortfolioKPIs(apps) {
   return { avgAgility, avgResilience, healthy, critical, total, overallScore };
 }
 
-// Top N apps a intervenir: críticas de datos con peor score de salud primero
+// 2.16 Top N apps a intervenir: críticas con peor score primero
 export function getTopCritical(apps, n = 10) {
   const CRIT_ORDER = { MuySignificativo: 0, Significativo: 1, Moderado: 2, Bajo: 3 };
   return [...apps]
