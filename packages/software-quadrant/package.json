@@ -2,6 +2,7 @@
   "name": "@leanix-reports/software-quadrant",
   "version": "1.0.0",
   "description": "Software Health Quadrant — Agilidad vs Resiliencia",
+  "author": "Alicorp",
   "private": true,
   "leanixReport": {
     "id": "pe.com.alicorp.softwarequadrant",
