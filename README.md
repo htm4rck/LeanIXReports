@@ -53,7 +53,7 @@ module.exports = createWebpackConfig(__dirname);
 
 ## Credenciales
 
-Crear manualmente `c:\enviroment\leanix.json`:
+Crear o completar `./.leanix.local.json` en la raíz:
 
 ```json
 {
@@ -62,7 +62,7 @@ Crear manualmente `c:\enviroment\leanix.json`:
 }
 ```
 
-El Makefile lo copia automáticamente antes de cada `dev` o `upload`. Nunca se commitea.
+El `Makefile` lo copia automáticamente a `packages/<reporte>/lxr.json` antes de cada `dev` o `upload`. Nunca se commitea.
 
 ---
 
@@ -74,6 +74,7 @@ El Makefile lo copia automáticamente antes de cada `dev` o `upload`. Nunca se c
 |---------|-------------|
 | `make install` | Instala todas las dependencias |
 | `make dev REPORT=software-quadrant` | Levanta dev server |
+| `make dev-remote REPORT=software-quadrant` | Levanta dev server para uso remoto con túnel SSH |
 | `make build REPORT=software-quadrant` | Build de un reporte |
 | `make build-all` | Build de todos los reportes |
 | `make upload REPORT=software-quadrant` | Sube un reporte a LeanIX |
@@ -90,14 +91,32 @@ El Makefile lo copia automáticamente antes de cada `dev` o `upload`. Nunca se c
 npm install
 
 # 2. Copiar credenciales
-copy c:\enviroment\leanix.json packages\software-quadrant\lxr.json
+cp .leanix.local.json packages/software-quadrant/lxr.json
 
 # 3. Crear symlink de node_modules (si no existe)
-mklink /J packages\software-quadrant\node_modules node_modules
+ln -s ../../node_modules packages/software-quadrant/node_modules
 
 # 4. Levantar dev server
-cd packages\software-quadrant
+cd packages/software-quadrant
 npm start
+```
+
+### Desarrollo remoto
+
+Si el reporte corre en un servidor y el navegador lo abres desde tu máquina local, `lxr` imprimirá una URL con `https://localhost:8080`. En ese caso debes tunelizar ese puerto a tu máquina:
+
+```bash
+# En el servidor
+make dev-remote REPORT=software-landscape
+
+# En tu máquina local
+ssh -L 8080:127.0.0.1:8080 <usuario>@<servidor>
+```
+
+Luego abre en tu navegador local:
+
+```bash
+https://localhost:8080
 ```
 
 ---

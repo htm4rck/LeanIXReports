@@ -1,12 +1,12 @@
 {
-  "name": "@leanix-reports/capability-poster",
+  "name": "@leanix-reports/software-landscape",
   "version": "1.0.0",
-  "description": "Capability Map Poster - Layout Horizontal con Front/Middle Office",
+  "description": "Software Landscape — Resumen y vista de componentes",
   "author": "Marc Vilchez",
   "private": true,
   "leanixReport": {
-    "id": "pe.com.alicorp.capabilityposter",
-    "title": "Capacidades Críticas - Poster",
+    "id": "pe.com.alicorp.softwarelandscape",
+    "title": "Software Landscape",
     "defaultConfig": {}
   },
   "leanixReportingCli": {
@@ -21,6 +21,6 @@
   "dependencies": {
     "@leanix/reporting": "^0.4.148",
     "@leanix-reports/shared": "*",
-    "lodash": "^4.17.21"
+    "html2canvas": "^1.4.1"
   }
 }

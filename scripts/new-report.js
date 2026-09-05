@@ -25,7 +25,11 @@ fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({
     defaultConfig: {},
   },
   leanixReportingCli: { distPath: 'dist', buildCommand: 'npx webpack' },
-  scripts: { build: 'lxr build', start: 'lxr start', upload: 'lxr upload' },
+  scripts: {
+    build: 'npx -p @leanix/reporting-cli@1.0.0-beta.28 lxr build',
+    start: 'npx -p @leanix/reporting-cli@1.0.0-beta.28 lxr start',
+    upload: 'npx -p @leanix/reporting-cli@1.0.0-beta.28 lxr upload'
+  },
   dependencies: {
     '@leanix/reporting': '^0.4.148',
     '@leanix-reports/shared': '*',

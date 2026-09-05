@@ -2,3 +2,5 @@ node_modules
 dist
 bundle.tgz
 **/lxr.json
+.leanix.local.json
+tmp

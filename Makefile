@@ -1,86 +1,110 @@
+SHELL := /bin/bash
+
 # LeanIX Reports — Makefile
 # Uso: make <target> REPORT=<nombre>
 # Ejemplo: make dev REPORT=software-quadrant
 
-ENV_FILE = c:\enviroment\leanix.json
-PKG_DIR  = packages
-REPORT   =
+ENV_FILE ?= .leanix.local.json
+PKG_DIR  := packages
+REPORT   ?=
+REPORT_DIR := $(PKG_DIR)/$(REPORT)
+REPORTS := $(filter-out $(PKG_DIR)/shared,$(sort $(wildcard $(PKG_DIR)/*)))
 
-# ─── Install ───────────────────────────────────────────────────────────────────
+.PHONY: install dev dev-remote tunnel-help build build-all upload upload-all new clean bump list help prepare-report ensure-report ensure-report-name ensure-env
 
-.PHONY: install
 install:
 	npm install
 
-# ─── Development ───────────────────────────────────────────────────────────────
+ensure-report-name:
+	@test -n "$(REPORT)" || (echo && echo "ERROR: debes indicar el reporte. Ejemplo: make dev REPORT=software-quadrant" && echo && exit 1)
 
-.PHONY: dev
-dev:
-	@if "$(REPORT)"=="" (echo. && echo ERROR: debes indicar el reporte. Ejemplo: make dev REPORT=software-quadrant && echo. && exit /b 1)
-	copy /Y "$(ENV_FILE)" $(PKG_DIR)\$(REPORT)\lxr.json
-	@if not exist $(PKG_DIR)\$(REPORT)\node_modules mklink /J $(PKG_DIR)\$(REPORT)\node_modules node_modules
-	cd $(PKG_DIR)\$(REPORT) && npm start
+ensure-report:
+	@$(MAKE) ensure-report-name REPORT="$(REPORT)"
+	@test -d "$(REPORT_DIR)" || (echo && echo "ERROR: no existe $(REPORT_DIR)" && echo && exit 1)
 
-# ─── Build ─────────────────────────────────────────────────────────────────────
+ensure-env:
+	@test -f "$(ENV_FILE)" || (echo && echo "ERROR: falta $(ENV_FILE). Completa host y apitoken en el archivo de la raíz." && echo && exit 1)
 
-.PHONY: build
-build:
-	@if "$(REPORT)"=="" (echo. && echo ERROR: debes indicar el reporte. Ejemplo: make build REPORT=software-quadrant && echo. && exit /b 1)
-	cd $(PKG_DIR)\$(REPORT) && npm run build
+prepare-report: ensure-report ensure-env
+	@cp "$(ENV_FILE)" "$(REPORT_DIR)/lxr.json"
+	@if [ ! -e "$(REPORT_DIR)/node_modules" ]; then ln -s ../../node_modules "$(REPORT_DIR)/node_modules"; fi
 
-.PHONY: build-all
+dev: prepare-report
+	cd "$(REPORT_DIR)" && npm start
+
+dev-remote: prepare-report
+	@echo
+	@echo "Levanta el servidor remoto y luego abre un tunel SSH desde tu maquina local:"
+	@echo "  ssh -L 8080:127.0.0.1:8080 <usuario>@<servidor>"
+	@echo
+	@echo "Cuando el tunel este activo, abre en tu navegador local:"
+	@echo "  https://localhost:8080"
+	@echo
+	cd "$(REPORT_DIR)" && npm start
+
+tunnel-help:
+	@echo
+	@echo "Uso remoto recomendado:"
+	@echo "  1. En el servidor: make dev-remote REPORT=software-landscape"
+	@echo "  2. En tu maquina: ssh -L 8080:127.0.0.1:8080 <usuario>@<servidor>"
+	@echo "  3. Abrir: https://localhost:8080"
+	@echo
+
+build: ensure-report
+	cd "$(REPORT_DIR)" && npm run build
+
 build-all:
-	@for /D %%r in ($(PKG_DIR)\*) do @if not "%%~nxr"=="shared" (echo Building %%~nxr... && cd %%r && npm run build && cd ..\.. )
+	@for report in $(REPORTS); do \
+		echo "Building $$(basename "$$report")..."; \
+		(cd "$$report" && npm run build) || exit $$?; \
+	done
 
-# ─── Upload ────────────────────────────────────────────────────────────────────
+upload: prepare-report
+	cd "$(REPORT_DIR)" && npm run upload
 
-.PHONY: upload
-upload:
-	@if "$(REPORT)"=="" (echo. && echo ERROR: debes indicar el reporte. Ejemplo: make upload REPORT=software-quadrant && echo. && exit /b 1)
-	copy /Y "$(ENV_FILE)" $(PKG_DIR)\$(REPORT)\lxr.json
-	@if not exist $(PKG_DIR)\$(REPORT)\node_modules mklink /J $(PKG_DIR)\$(REPORT)\node_modules node_modules
-	cd $(PKG_DIR)\$(REPORT) && npm run upload
+upload-all: ensure-env
+	@for report in $(REPORTS); do \
+		echo "Uploading $$(basename "$$report")..."; \
+		cp "$(ENV_FILE)" "$$report/lxr.json"; \
+		if [ ! -e "$$report/node_modules" ]; then ln -s ../../node_modules "$$report/node_modules"; fi; \
+		(cd "$$report" && npm run upload) || exit $$?; \
+	done
 
-.PHONY: upload-all
-upload-all:
-	@for /D %%r in ($(PKG_DIR)\*) do @if not "%%~nxr"=="shared" (copy /Y "$(ENV_FILE)" %%r\lxr.json && cd %%r && npm run upload && cd ..\..)
+new: ensure-report-name
+	node scripts/new-report.js "$(REPORT)"
 
-# ─── Utilities ─────────────────────────────────────────────────────────────────
-
-.PHONY: new
-new:
-	@if "$(REPORT)"=="" (echo. && echo ERROR: debes indicar el reporte. Ejemplo: make new REPORT=mi-reporte && echo. && exit /b 1)
-	node scripts\new-report.js $(REPORT)
-
-.PHONY: clean
 clean:
-	@for /D %%r in ($(PKG_DIR)\*) do @if exist %%r\dist (echo Limpiando %%~nxr... && rmdir /s /q %%r\dist)
+	@for report in $(REPORTS); do \
+		if [ -d "$$report/dist" ]; then \
+			echo "Limpiando $$(basename "$$report")..."; \
+			rm -rf "$$report/dist"; \
+		fi; \
+	done
 
-.PHONY: bump
-bump:
-	@if "$(REPORT)"=="" (echo. && echo ERROR: debes indicar el reporte. Ejemplo: make bump REPORT=software-quadrant && echo. && exit /b 1)
-	cd $(PKG_DIR)\$(REPORT) && npm version patch --no-git-tag-version
+bump: ensure-report
+	cd "$(REPORT_DIR)" && npm version patch --no-git-tag-version
 
-.PHONY: list
 list:
-	@echo.
-	@echo Reportes disponibles:
-	@for /D %%r in ($(PKG_DIR)\*) do @if not "%%~nxr"=="shared" echo   - %%~nxr
-	@echo.
+	@echo
+	@echo "Reportes disponibles:"
+	@for report in $(REPORTS); do echo "  - $$(basename "$$report")"; done
+	@echo
 
-.PHONY: help
 help:
-	@echo.
-	@echo LeanIX Reports — Comandos disponibles:
-	@echo.
-	@echo   make install                        Instala dependencias
-	@echo   make dev    REPORT=nombre           Levanta dev server
-	@echo   make build  REPORT=nombre           Build de un reporte
-	@echo   make build-all                      Build de todos los reportes
-	@echo   make upload REPORT=nombre           Sube un reporte a LeanIX
-	@echo   make upload-all                     Sube todos los reportes
-	@echo   make new    REPORT=nombre           Scaffold de nuevo reporte
-	@echo   make bump   REPORT=nombre           Bump version patch
-	@echo   make clean                          Elimina carpetas dist
-	@echo   make list                           Lista reportes disponibles
-	@echo.
+	@echo
+	@echo "LeanIX Reports — Comandos disponibles:"
+	@echo
+	@echo "  make install                        Instala dependencias"
+	@echo "  make dev    REPORT=nombre           Levanta dev server"
+	@echo "  make dev-remote REPORT=nombre       Levanta dev server para uso remoto por SSH tunnel"
+	@echo "  make build  REPORT=nombre           Build de un reporte"
+	@echo "  make build-all                      Build de todos los reportes"
+	@echo "  make upload REPORT=nombre           Sube un reporte a LeanIX"
+	@echo "  make upload-all                     Sube todos los reportes"
+	@echo "  make new    REPORT=nombre           Scaffold de nuevo reporte"
+	@echo "  make bump   REPORT=nombre           Bump version patch"
+	@echo "  make clean                          Elimina carpetas dist"
+	@echo "  make list                           Lista reportes disponibles"
+	@echo "  make tunnel-help                    Recordatorio del flujo remoto con SSH tunnel"
+	@echo "  ENV_FILE=.leanix.local.json         Archivo local de credenciales"
+	@echo
